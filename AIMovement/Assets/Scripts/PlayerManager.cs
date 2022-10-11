@@ -6,7 +6,7 @@ public class PlayerManager : MonoBehaviour {
     private Rigidbody rb;
     public float speed = 4f;
     public float sprintSpeed = 9f;
-    public float jumpForce = 5f;
+    public float jumpForce = 400f;
     private float vertical;
     private float horizontal;
     public bool isGrounded;
@@ -35,23 +35,23 @@ public class PlayerManager : MonoBehaviour {
         if(Input.GetKey(key: KeyCode.LeftShift)) { //Sprinting 
             speed = sprintSpeed;
         }
+        transform.Translate(translation: cameraRelativeMovement * speed, relativeTo: Space.World);
 
-        if(Input.GetAxis(axisName: "Jump") > 0) { //Jumping
-            if(isGrounded) {
-                rb.AddForce(force: transform.up * jumpForce);
+        if(isGrounded) {
+            if (Input.GetButtonDown(buttonName: "Jump")) {
+                rb.AddForce(force: Vector3.up * jumpForce);
             }
         }
-
-        transform.Translate(translation: cameraRelativeMovement * speed, relativeTo: Space.World);
     }
 
-    void OnCollisionEnter(Collision collision) { //Are we grounded?
+    //Should we be grounded?
+    void OnCollisionEnter(Collision collision) {  // Yes
         if(collision.gameObject.tag == ("Ground")) {
             isGrounded = true;
         }
     }
     
-    void OnCollisionExit(Collision collision) { //Are we grounded?
+    void OnCollisionExit(Collision collision) { // no
         if(collision.gameObject.tag == ("Ground")) {
             isGrounded = false;
         }
