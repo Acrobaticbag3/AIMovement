@@ -1,3 +1,6 @@
+// The basic movement part was done by Kevin
+// The advanced movement vas done by Johannes
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
