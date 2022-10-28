@@ -12,17 +12,22 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using BehaviorTree;
+using UnityEngine.AI;
 
 public class TaskPatrol : Node {
     private Transform _transform;
     private Animator _animator;
     private Transform[] _waypoints;
+    NavMeshAgent agent;
 
     private int _currentWaypointIndex = 0;
 
     private float _waitTime = 1f; // in seconds
     private float _waitCounter = 0f;
     private bool _waiting = false;
+
+    // Constructor for 
+    public TaskPatrol(NavMeshAgent agent) => this.agent = agent;
 
     public TaskPatrol(Transform transform, Transform[] waypoints) {
         _transform = transform;

@@ -40,11 +40,11 @@ public class PlayerManager : MonoBehaviour {
         }
         transform.Translate(translation: cameraRelativeMovement * speed, relativeTo: Space.World);
 
-        if(isGrounded) {
-            if (Input.GetButtonDown(buttonName: "Jump")) {
-                rb.AddForce(force: Vector3.up * jumpForce);
-            }
+        
+        if (Input.GetButtonDown(buttonName: "Jump") ) {
+            rb.AddForce(force: Vector3.up * jumpForce);
         }
+    
     }
 
     //Should we be grounded?
