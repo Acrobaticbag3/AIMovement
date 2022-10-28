@@ -40,8 +40,7 @@ public class PlayerManager : MonoBehaviour {
         }
         transform.Translate(translation: cameraRelativeMovement * speed, relativeTo: Space.World);
 
-        
-        if (Input.GetButtonDown(buttonName: "Jump") ) {
+        if (Input.GetButtonDown(buttonName: "Jump") && isGrounded) {
             rb.AddForce(force: Vector3.up * jumpForce);
         }
     

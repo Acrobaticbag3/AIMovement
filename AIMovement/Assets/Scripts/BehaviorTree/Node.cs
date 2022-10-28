@@ -48,7 +48,7 @@ namespace BehaviorTree {
             _dataContext[key: key] = value;
         }
 
-        public object getData(string key) {
+        public object GetData(string key) {
 
             object value = null;
             if (_dataContext.TryGetValue(key: key, value: out value))
@@ -56,7 +56,7 @@ namespace BehaviorTree {
 
             Node node = parent;
             while (node != null) {
-                value = node.getData(key: key);
+                value = node.GetData(key: key);
                 if (value != null)
                     return value;
                 node = node.parent;

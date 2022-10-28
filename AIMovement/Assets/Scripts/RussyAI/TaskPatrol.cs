@@ -1,10 +1,10 @@
 /*  
     The general BT architecture was written by Kevin Johansson.
-    Info was gathered from: https://medium.com/geekculture/how-to-create-a-simple-behaviour-tree-in-unity-c-3964c84c060e
 
-    This script helps to implement the 
-    generic Behavior Tree architecture 
-    (aka BT architecture).
+    Additional info.
+        Since this script (task patrol) isn't a monobehaviour 
+        (but rather an abstract blob of data), we are forced 
+        to pass it which transform to use.
 */
 
 using System.Collections;
@@ -16,7 +16,7 @@ using UnityEngine.AI;
 
 public class TaskPatrol : Node {
     private Transform _transform;
-    private Animator _animator;
+    // private Animator _animator; Add once we get animations
     private Transform[] _waypoints;
     NavMeshAgent agent;
 
@@ -26,22 +26,23 @@ public class TaskPatrol : Node {
     private float _waitCounter = 0f;
     private bool _waiting = false;
 
-    // Constructor for 
+    // Constructor for NavMeshAgent
     public TaskPatrol(NavMeshAgent agent) => this.agent = agent;
 
-    public TaskPatrol(Transform transform, Transform[] waypoints) {
+    // constructor gatering additional info such as waypoints, but also a referance to the agents preforming this task
+    public TaskPatrol(Transform transform, Transform[] waypoints) { 
         _transform = transform;
-        _animator = transform.GetComponent<Animator>();
+       // _animator = transform.GetComponent<Animator>(); Add once we get animations
         _waypoints = waypoints;
     }
 
-    public override NodeState Evaluate() {
+    public override NodeState Evaluate() { // Overrides the node
         if (_waiting) {
 
             _waitCounter += Time.deltaTime;
             if(_waitCounter < _waitTime) {
                 _waiting = false;
-                _animator.SetBool(name: "Walking", value: true);
+                // _animator.SetBool(name: "Walking", value: true); Add once we get animations
             }
 
         } else {
@@ -54,7 +55,7 @@ public class TaskPatrol : Node {
                 _waiting = true;
 
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
-                _animator.SetBool(name: "Walking", value: false);
+                // _animator.SetBool(name: "Walking", value: false); Add once we get animations
 
             } else {
                 _transform.position = Vector3.MoveTowards(current: _transform.position, target: wp.position, maxDistanceDelta: RussyBT.speed * Time.deltaTime);
