@@ -1,4 +1,15 @@
-// This script was written by Kevin
+/* 
+    ==============================================
+
+    This script was written by Kevin
+
+    Additioanl information:
+        This script is solely used so the camera 
+        look is relative to the mouse position.
+        It also hides the cursor.
+
+    ==============================================
+*/ 
 
 using System.Collections;
 using System.Collections.Generic;

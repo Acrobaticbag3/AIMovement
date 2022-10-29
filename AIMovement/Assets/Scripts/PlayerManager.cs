@@ -9,10 +9,12 @@ public class PlayerManager : MonoBehaviour {
     private Rigidbody rb;
     public float speed = 4f;
     public float sprintSpeed = 9f;
+
     public float jumpForce = 400f;
+    public bool isGrounded;
+
     private float vertical;
     private float horizontal;
-    public bool isGrounded;
    
     void Start() {
         rb = GetComponent<Rigidbody>();

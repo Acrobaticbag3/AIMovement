@@ -1,5 +1,9 @@
 /*  
+    ============================================================
+
     The general BT architecture was written by Kevin Johansson.
+
+    ============================================================
 */
 
 using System.Collections;

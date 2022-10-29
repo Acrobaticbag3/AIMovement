@@ -1,14 +1,19 @@
-/*
-    The enemy Manager was w riten by Kevin Johansson
+/* 
+    ==============================================
+    
+    This script was written by Kevin
 
-    Currently in use for the player to test stuff,
-    however this is meant to be an Enemy Manager.
-*/
+    Additioanl information:
+        Currently in use for the player to test 
+        stuff, however this is meant to be an 
+        Enemy Manager.
+
+    ==============================================
+*/ 
 
 using UnityEngine;
 
-public class EnemyManager : MonoBehaviour
-{
+public class EnemyManager : MonoBehaviour {
     private int _healthpoints;
 
     private void Awake() {

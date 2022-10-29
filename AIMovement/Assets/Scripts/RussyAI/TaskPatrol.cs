@@ -1,10 +1,14 @@
 /*  
+    ============================================================
+
     The general BT architecture was written by Kevin Johansson.
 
     Additional info.
         Since this script (task patrol) isn't a monobehaviour 
         (but rather an abstract blob of data), we are forced 
         to pass it which transform to use.
+
+    ============================================================
 */
 
 using System.Collections;

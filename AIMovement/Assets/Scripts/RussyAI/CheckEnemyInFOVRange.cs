@@ -1,10 +1,14 @@
 /*  
+    ============================================================
+
     The general BT architecture was written by Kevin Johansson.
 
     Additional info.
         [0] = // Accessing the shared data in our root 
         requiers us to go up by two levels, hens the 
         use of parent.parent
+
+    ============================================================
 */
 
 using System.Collections;

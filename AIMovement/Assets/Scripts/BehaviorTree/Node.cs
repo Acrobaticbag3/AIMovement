@@ -1,4 +1,6 @@
 /*  
+    ============================================================
+
     The general BT architecture was written by Kevin Johansson.
     Info was gathered from: https://medium.com/geekculture/how-to-create-a-simple-behaviour-tree-in-unity-c-3964c84c060e
 
@@ -9,6 +11,8 @@
     definitions:
         - enum       : user-defined value type used to represent a list of named integer constants.
         - dictionary : a generic collection which is generally used to store key/value pairs.
+
+    ============================================================
 */
 
 using System.Collections;

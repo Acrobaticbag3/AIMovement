@@ -1,3 +1,11 @@
+/*  
+    ============================================================
+
+    The general BT architecture was written by Kevin Johansson.
+
+    ============================================================
+*/
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
