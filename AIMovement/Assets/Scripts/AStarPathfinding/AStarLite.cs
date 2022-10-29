@@ -9,7 +9,9 @@
         time build a full A* pathfinding
         system from scrach.
 
-        [0] - 
+        [0] - Since the grid has its own set of coordinates, it
+        wont use the coordinates that Unity uses. This Method 
+        fixes that by converting the coordinates.
 
     ============================================================
 */
@@ -40,8 +42,32 @@ public class AStarLite : MonoBehaviour {
             for (int z = 0; z < gridSizeZ; z++) {
 
                 aStarNodes[x, z] = new AStarNode(new Vector3Int(x, 0, z));
-            }
 
+                Vector3 worldPosition = ConvertGridPositionToWorldPosition(aStarNodes[x, z]);
+
+                // Checks for obsicles
+                Collider[] hitCollider = Physics.OverlapSphere(worldPosition, cellSize / 2.0f); // May cause errors down the line, be ware
+
+
+                /* There is something wrong with this snippet of code, not quite sure what.
+                // But grid generation is  
+
+                if (hitCollider != null) { // [0] - experimental fiture, might brake stuff
+
+                    // Ignore other ai, they are not obsticles
+                    if (hitCollider[0].transform.root.CompareTag("EnemyAI"))
+                        continue;
+
+                    // Ignore Player, they are not an obsticle
+                    if (hitCollider[0].transform.root.CompareTag("Player"))
+                        continue;
+
+                    // Mark as an object
+                    aStarNodes[x, z].isObsticale = true;
+                }
+
+                */
+            }
         
     }
 
@@ -56,8 +82,10 @@ public class AStarLite : MonoBehaviour {
         // Draw grid
         for (int x = 0; x < gridSizeX; x++) 
             for (int z = 0; z < gridSizeZ; z++) {
-
-                Gizmos.color = Color.green;
+    
+                if (aStarNodes[x, z].isObsticale)
+                    Gizmos.color = Color.red;
+                else Gizmos.color = Color.green;
 
                 Gizmos.DrawWireCube(ConvertGridPositionToWorldPosition(aStarNodes[x, z]), new Vector3(cellSize, cellSize, cellSize));
             }
