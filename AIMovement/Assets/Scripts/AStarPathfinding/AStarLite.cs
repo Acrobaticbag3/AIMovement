@@ -13,6 +13,12 @@
         wont use the coordinates that Unity uses. This Method 
         fixes that by converting the coordinates.
 
+        [1] - Since the destination Vector3 system uses its own 
+        set of coordinates. We need to Once again convert the
+        coordinates. However, this time in the "oposite" way
+        Since we want the world position to mach the grid 
+        point.
+
     ============================================================
 */
 
@@ -45,30 +51,63 @@ public class AStarLite : MonoBehaviour {
 
                 Vector3 worldPosition = ConvertGridPositionToWorldPosition(aStarNodes[x, z]);
 
-                // Checks for obsicles
-                Collider[] hitCollider = Physics.OverlapSphere(worldPosition, cellSize / 2.0f); // May cause errors down the line, be ware
-
-
-                /* There is something wrong with this snippet of code, not quite sure what.
-                // But grid generation is  
+                // Checks if the A* node is an obsicle
+                Collider[] hitCollider = Physics.OverlapSphere(worldPosition, cellSize / 2.0f); 
 
                 if (hitCollider != null) { // [0] - experimental fiture, might brake stuff
 
+                    // The ground is obviously not an obsticle 
+                    if (hitCollider[0].CompareTag("Ground"))
+                        continue;
+
                     // Ignore other ai, they are not obsticles
-                    if (hitCollider[0].transform.root.CompareTag("EnemyAI"))
+                    if (hitCollider[0].CompareTag("EnemyAI"))
                         continue;
 
                     // Ignore Player, they are not an obsticle
-                    if (hitCollider[0].transform.root.CompareTag("Player"))
+                    if (hitCollider[0].CompareTag("Player"))
                         continue;
 
                     // Mark as an object
                     aStarNodes[x, z].isObsticale = true;
                 }
-
-                */
             }
-        
+
+        // Loop Through the grid again and populate neighbours
+        for (int x = 0; x < gridSizeX; x++) 
+            for (int z = 0; z < gridSizeZ; z++) {
+                
+                // Check northern neighbours, if we're on the edge don't add it
+                if (z - 1 >= 0 && !aStarNodes[x, z].isObsticale) 
+                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+
+                // Check Southern neighbours, if we're on the edge don't add it 
+                if (z + 1 >= gridSizeZ - 1 && !aStarNodes[x, z].isObsticale) 
+                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+
+                // Check eastern neighbours, if we're on the edge don't add it
+                if (x - 1 >= 0 && !aStarNodes[x, z].isObsticale) 
+                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+
+                // Check Western neighbours, if we're on the edge don't add it
+                if (x + 1 >= gridSizeX - 1 && !aStarNodes[x, z].isObsticale) 
+                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+            }        
+    }
+
+    public List<Vector3> FindOurPath(Vector3 destination) {
+        if (aStarNodes == null)
+            return null;
+
+        // Convert destination from world to grid position
+        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(destination);
+        Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(transform.position);
+    }
+
+    Vector3Int ConvertWorldToGridPoint(Vector3 position) { // [1]
+        Vector3Int gridPoint = new Vector3Int(Mathf.RoundToInt(position.x / cellSize + gridSizeX / 2.0f), Mathf.RoundToInt(position.z / cellSize + gridSizeZ / 2.0f));
+
+        return gridPoint;
     }
 
     Vector3 ConvertGridPositionToWorldPosition(AStarNode aStarNode) { // [0]
