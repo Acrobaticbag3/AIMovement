@@ -33,11 +33,19 @@ public class AStarLite : MonoBehaviour {
     int gridSizeZ = 40;
     float cellSize = 2;
 
+    [Header("Grid Nodes")]
     AStarNode[,] aStarNodes; 
+    AStarNode startNode;
+
+    [Header("Debugging")]
+    Vector3 startPositionDebug = new Vector3(1000, 0, 0);
+    Vector3 destinationPositionDebug = new Vector3(1000, 0, 0);
 
     // Start is called before the first frame update
     void Start() {
         CreateGrid();
+
+        FindOurPath(new Vector3(32, 0, 17));
     }
 
     void CreateGrid() {
@@ -101,7 +109,36 @@ public class AStarLite : MonoBehaviour {
 
         // Convert destination from world to grid position
         Vector3Int destinationGridPoint = ConvertWorldToGridPoint(destination);
-        Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(transform.position);
+        Vector3Int.FloorToInt currentPositionGridPoint = (transform.position);
+
+        // Set a debug position that can be show while developing
+        destinationPositionDebug = destination;
+
+        // Start the algorithem by calculating the costs for the first node
+        startNode = GetNodeFromPoint(currentPositionGridPoint);
+
+        // Store the start point so that we can use it while developing
+        startPositionDebug = ConvertGridPositionToWorldPosition(startNode);
+
+        return null;
+    }
+
+    // A healper function that helps us to find our start note.
+    AStarNode GetNodeFromPoint(Vector3Int gridPoint) {
+
+        if (gridPoint.x < 0)
+            return null;
+
+        if (gridPoint.x > gridSizeX - 1)
+            return null;
+
+        if (gridPoint.z < 0)
+            return null;
+
+        if (gridPoint.z < gridSizeZ - 1)
+            return null;
+
+        return aStarNodes[gridPoint.x, gridPoint.z];
     }
 
     Vector3Int ConvertWorldToGridPoint(Vector3 position) { // [1]
@@ -118,7 +155,7 @@ public class AStarLite : MonoBehaviour {
         if (aStarNodes == null) 
             return;
         
-        // Draw grid
+        // Draw grid for debug reosons
         for (int x = 0; x < gridSizeX; x++) 
             for (int z = 0; z < gridSizeZ; z++) {
     
@@ -128,6 +165,14 @@ public class AStarLite : MonoBehaviour {
 
                 Gizmos.DrawWireCube(ConvertGridPositionToWorldPosition(aStarNodes[x, z]), new Vector3(cellSize, cellSize, cellSize));
             }
+
+        // Draw start position
+        Gizmos.color = Color.black;
+        Gizmos.DrawSphere(startPositionDebug, 1f);
+
+        // Draw end position
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(destinationPositionDebug, 1f);
     }
 
 }
