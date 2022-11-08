@@ -1,21 +1,21 @@
 /*
     ============================================================
 
-    Thsi script was made by Kevin Johansson.
+    This script was made by Kevin Johansson.
 
     Additional information.
         This script is called AStarLite
         Because II don't have enough
         time build a full A* pathfinding
-        system from scrach.
+        system from scratch.
 
         [0] - Since the grid has its own set of coordinates, it
-        wont use the coordinates that Unity uses. This Method 
+        won't use the coordinates that Unity uses. This Method 
         fixes that by converting the coordinates.
 
         [1] - Since the destination Vector3 system uses its own 
         set of coordinates. We need to Once again convert the
-        coordinates. However, this time in the "oposite" way
+        coordinates. However, this time in the "opposite" way
         Since we want the world position to mach the grid 
         point.
 
@@ -28,24 +28,26 @@ using UnityEngine;
 
 public class AStarLite : MonoBehaviour {
 
-    [Header("Grid creation")]
+    [Header(header: "Grid creation")]
     int gridSizeX = 40;
     int gridSizeZ = 40;
     float cellSize = 2;
 
-    [Header("Grid Nodes")]
-    AStarNode[,] aStarNodes; 
-    AStarNode startNode;
+    [Header(header: "Grid Nodes")]
+    [SerializeField]
+    public AStarNode[,] aStarNodes;
+    [SerializeField] 
+    public AStarNode startNode;
 
-    [Header("Debugging")]
-    Vector3 startPositionDebug = new Vector3(1000, 0, 0);
-    Vector3 destinationPositionDebug = new Vector3(1000, 0, 0);
+    [Header(header: "Debugging")]
+    Vector3 startPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
+    Vector3 destinationPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
 
     // Start is called before the first frame update
     void Start() {
         CreateGrid();
 
-        FindOurPath(new Vector3(32, 0, 17));
+        FindOurPath(destination: new Vector3(x: 32, y: 0, z: 17));
     }
 
     void CreateGrid() {
@@ -55,29 +57,29 @@ public class AStarLite : MonoBehaviour {
         for (int x = 0; x < gridSizeX; x++) 
             for (int z = 0; z < gridSizeZ; z++) {
 
-                aStarNodes[x, z] = new AStarNode(new Vector3Int(x, 0, z));
+                aStarNodes[x, z] = new AStarNode(_gridPosition: new Vector3Int(x: x, y: 0, z: z));
 
-                Vector3 worldPosition = ConvertGridPositionToWorldPosition(aStarNodes[x, z]);
+                Vector3 worldPosition = ConvertGridPositionToWorldPosition(aStarNode: aStarNodes[x, z]);
 
-                // Checks if the A* node is an obsicle
-                Collider[] hitCollider = Physics.OverlapSphere(worldPosition, cellSize / 2.0f); 
+                // Checks if the A* node is an Obstacle
+                Collider[] hitCollider = Physics.OverlapSphere(position: worldPosition, radius: cellSize / 2.0f); 
 
                 if (hitCollider != null) { // [0] - experimental fiture, might brake stuff
 
-                    // The ground is obviously not an obsticle 
-                    if (hitCollider[0].CompareTag("Ground"))
+                    // The ground is obviously not an Obstacle 
+                    if (hitCollider[0].CompareTag(tag: "Ground"))
                         continue;
 
-                    // Ignore other ai, they are not obsticles
-                    if (hitCollider[0].CompareTag("EnemyAI"))
+                    // Ignore other ai, they are not Obstacle
+                    if (hitCollider[0].CompareTag(tag: "EnemyAI"))
                         continue;
 
-                    // Ignore Player, they are not an obsticle
-                    if (hitCollider[0].CompareTag("Player"))
+                    // Ignore Player, they are not an Obstacle
+                    if (hitCollider[0].CompareTag(tag: "Player"))
                         continue;
 
                     // Mark as an object
-                    aStarNodes[x, z].isObsticale = true;
+                    aStarNodes[x, z].isObstacle = true;
                 }
             }
 
@@ -86,20 +88,20 @@ public class AStarLite : MonoBehaviour {
             for (int z = 0; z < gridSizeZ; z++) {
                 
                 // Check northern neighbours, if we're on the edge don't add it
-                if (z - 1 >= 0 && !aStarNodes[x, z].isObsticale) 
-                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+                if (z - 1 >= 0 && !aStarNodes[x, z].isObstacle) 
+                    aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]); 
 
                 // Check Southern neighbours, if we're on the edge don't add it 
-                if (z + 1 >= gridSizeZ - 1 && !aStarNodes[x, z].isObsticale) 
-                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+                if (z + 1 >= gridSizeZ - 1 && !aStarNodes[x, z].isObstacle) 
+                    aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]); 
 
                 // Check eastern neighbours, if we're on the edge don't add it
-                if (x - 1 >= 0 && !aStarNodes[x, z].isObsticale) 
-                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+                if (x - 1 >= 0 && !aStarNodes[x, z].isObstacle) 
+                    aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]); 
 
                 // Check Western neighbours, if we're on the edge don't add it
-                if (x + 1 >= gridSizeX - 1 && !aStarNodes[x, z].isObsticale) 
-                    aStarNodes[x, z].neighbours.Add(aStarNodes[x, z]); 
+                if (x + 1 >= gridSizeX - 1 && !aStarNodes[x, z].isObstacle) 
+                    aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]); 
             }        
     }
 
@@ -108,24 +110,24 @@ public class AStarLite : MonoBehaviour {
             return null;
 
         // Convert destination from world to grid position
-        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(destination);
-        Vector3Int.FloorToInt currentPositionGridPoint = (transform.position);
+        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(position: destination);
+        Vector3Int currentPositionGridPoint = Vector3Int.FloorToInt(v: transform.position); 
 
         // Set a debug position that can be show while developing
         destinationPositionDebug = destination;
 
-        // Start the algorithem by calculating the costs for the first node
-        startNode = GetNodeFromPoint(currentPositionGridPoint);
+        // Start the algorithm by calculating the costs for the first node 
+        startNode = GetNodeFromPoint(gridPoint: currentPositionGridPoint);
 
         // Store the start point so that we can use it while developing
-        startPositionDebug = ConvertGridPositionToWorldPosition(startNode);
+        startPositionDebug = ConvertGridPositionToWorldPosition(aStarNode: startNode);
 
         return null;
     }
 
-    // A healper function that helps us to find our start note.
+    // A helper function that helps us to find our start note.
     AStarNode GetNodeFromPoint(Vector3Int gridPoint) {
-
+        Debug.Log("Point: "+gridPoint);
         if (gridPoint.x < 0)
             return null;
 
@@ -142,37 +144,37 @@ public class AStarLite : MonoBehaviour {
     }
 
     Vector3Int ConvertWorldToGridPoint(Vector3 position) { // [1]
-        Vector3Int gridPoint = new Vector3Int(Mathf.RoundToInt(position.x / cellSize + gridSizeX / 2.0f), Mathf.RoundToInt(position.z / cellSize + gridSizeZ / 2.0f));
+        Vector3Int gridPoint = new Vector3Int(x: Mathf.RoundToInt(f: position.x / cellSize + gridSizeX / 2.0f), y: Mathf.RoundToInt(f: position.z / cellSize + gridSizeZ / 2.0f));
 
         return gridPoint;
     }
 
     Vector3 ConvertGridPositionToWorldPosition(AStarNode aStarNode) { // [0]
-        return new Vector3(aStarNode.gridPosition.x * cellSize - (gridSizeX * cellSize) / 2.0f, 0, aStarNode.gridPosition.z * cellSize - (gridSizeZ * cellSize) / 2.0f);
+        return new Vector3(x: aStarNode.gridPosition.x * cellSize - (gridSizeX * cellSize) / 2.0f, y: 0, z: aStarNode.gridPosition.z * cellSize - (gridSizeZ * cellSize) / 2.0f);
     }
 
     void OnDrawGizmos() {
         if (aStarNodes == null) 
             return;
         
-        // Draw grid for debug reosons
+        // Draw grid for debug reasons
         for (int x = 0; x < gridSizeX; x++) 
             for (int z = 0; z < gridSizeZ; z++) {
     
-                if (aStarNodes[x, z].isObsticale)
+                if (aStarNodes[x, z].isObstacle)
                     Gizmos.color = Color.red;
                 else Gizmos.color = Color.green;
 
-                Gizmos.DrawWireCube(ConvertGridPositionToWorldPosition(aStarNodes[x, z]), new Vector3(cellSize, cellSize, cellSize));
+                Gizmos.DrawWireCube(center: ConvertGridPositionToWorldPosition(aStarNode: aStarNodes[x, z]), size: new Vector3(x: cellSize, y: cellSize, z: cellSize));
             }
 
         // Draw start position
         Gizmos.color = Color.black;
-        Gizmos.DrawSphere(startPositionDebug, 1f);
+        Gizmos.DrawSphere(center: startPositionDebug, radius: 1f);
 
         // Draw end position
         Gizmos.color = Color.red;
-        Gizmos.DrawSphere(destinationPositionDebug, 1f);
+        Gizmos.DrawSphere(center: destinationPositionDebug, radius: 1f);
     }
 
 }

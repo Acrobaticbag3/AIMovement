@@ -1,12 +1,12 @@
 /*
     ============================================================
 
-    Thsi script was made by Kevin Johansson.
+    This script was made by Kevin Johansson.
 
     Additional information.
         This script is called AStarLite Because II don't have 
         enough time build a full A* pathfinding system from 
-        scrach.
+        scratch.
 
         We don't inherit from  Monobehaviour here because
         there is no need for us to do it.
@@ -26,14 +26,14 @@ public class AStarNode {
     // List containing node neighbours
     public List<AStarNode> neighbours = new List<AStarNode>();
 
-    // Is the node an obsricale?
-    public bool isObsticale = false; 
+    // Is the node an obstacle?
+    public bool isObstacle = false; 
 
     // Distance from start point to goal 
     public int gCostDistanceFromStart = 0;
     // Distance from node to goal
     public int hCostDistanceFromGoal = 0; 
-    // The total cots of moveing to the set grid position
+    // The total cots of moving to the set grid position
     public int fCostTotal = 0;
 
     // The order that the nodes was picked in
