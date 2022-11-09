@@ -47,7 +47,7 @@ public class AStarLite : MonoBehaviour {
     void Start() {
         CreateGrid();
 
-        FindOurPath(destination: new Vector3(x: 32, y: 0, z: 17));
+        FindOurPath(destination: new Vector3(x: 32, y: 0, z: 30));
     }
 
     void CreateGrid() {
@@ -114,12 +114,14 @@ public class AStarLite : MonoBehaviour {
         Vector3Int currentPositionGridPoint = Vector3Int.FloorToInt(v: transform.position); 
 
         // Set a debug position that can be show while developing
+        Debug.Log(message: "Point: " +destination);
         destinationPositionDebug = destination;
 
         // Start the algorithm by calculating the costs for the first node 
         startNode = GetNodeFromPoint(gridPoint: currentPositionGridPoint);
 
         // Store the start point so that we can use it while developing
+        Debug.Log(message: "Point: " +startNode);
         startPositionDebug = ConvertGridPositionToWorldPosition(aStarNode: startNode);
 
         return null;
@@ -127,7 +129,6 @@ public class AStarLite : MonoBehaviour {
 
     // A helper function that helps us to find our start note.
     AStarNode GetNodeFromPoint(Vector3Int gridPoint) {
-        Debug.Log("Point: "+gridPoint);
         if (gridPoint.x < 0)
             return null;
 
@@ -137,7 +138,7 @@ public class AStarLite : MonoBehaviour {
         if (gridPoint.z < 0)
             return null;
 
-        if (gridPoint.z < gridSizeZ - 1)
+        if (gridPoint.z > gridSizeZ - 1)
             return null;
 
         return aStarNodes[gridPoint.x, gridPoint.z];
@@ -160,7 +161,7 @@ public class AStarLite : MonoBehaviour {
         // Draw grid for debug reasons
         for (int x = 0; x < gridSizeX; x++) 
             for (int z = 0; z < gridSizeZ; z++) {
-    
+                
                 if (aStarNodes[x, z].isObstacle)
                     Gizmos.color = Color.red;
                 else Gizmos.color = Color.green;
@@ -169,7 +170,7 @@ public class AStarLite : MonoBehaviour {
             }
 
         // Draw start position
-        Gizmos.color = Color.black;
+        Gizmos.color = Color.blue;
         Gizmos.DrawSphere(center: startPositionDebug, radius: 1f);
 
         // Draw end position
