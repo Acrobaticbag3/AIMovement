@@ -37,7 +37,7 @@ public class AStarNode {
     public int fCostTotal = 0;
 
     // The order that the nodes was picked in
-    public int pickOrder = 0;
+    public int pickedOrder = 0;
 
     // State to check if the cost has already been calculated
     bool isCostCalculated = false;
@@ -45,6 +45,19 @@ public class AStarNode {
     // This will be called as our constructor
     public AStarNode(Vector3Int _gridPosition) {
         gridPosition = _gridPosition;
+    }
+
+    public void CalculateCostsForNode(Vector3Int aiPosition, Vector3Int aiDestination) {
+
+        // Don't calculate the cost twice
+        if (isCostCalculated)
+            return;
+    
+        gCostDistanceFromStart = Mathf.Abs(gridPosition.x - aiPosition.x) + Mathf.Abs(gridPosition.z - aiPosition.z);
+        hCostDistanceFromGoal = Mathf.Abs(gridPosition.x - aiDestination.x) + Mathf.Abs(gridPosition.z - aiDestination.z);
+        fCostTotal = gCostDistanceFromStart + hCostDistanceFromGoal;
+        
+        isCostCalculated = true;
     }
 }
 
