@@ -36,12 +36,14 @@ public class AStarLite : MonoBehaviour {
 
     [Header(header: "Grid Nodes")]
     [SerializeField]
-    public AStarNode[,] aStarNodes;
+    AStarNode[,] aStarNodes;
     [SerializeField] 
-    public AStarNode startNode;
+    AStarNode startNode;
 
     List<AStarNode> nodesToCheck = new List<AStarNode>();
     List<AStarNode> nodesChecked = new List<AStarNode>();
+
+    List<Vector3> aiPath = new List<Vector3>();
 
     [Header(header: "Debugging")]
     Vector3 startPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
@@ -51,7 +53,7 @@ public class AStarLite : MonoBehaviour {
     void Start() {
         CreateGrid();
 
-        FindOurPath(destination: new Vector3(x: 15, y: 0, z: 15));
+        FindOurPath(destination: new Vector3(x: 32, y: 0, z: 17));
     }
 
     void CreateGrid() {
@@ -68,7 +70,7 @@ public class AStarLite : MonoBehaviour {
                 // Checks if the A* node is an Obstacle
                 Collider[] hitCollider = Physics.OverlapSphere(position: worldPosition, radius: cellSize / 2.0f); 
 
-                if (hitCollider != null) { // [0] - experimental fiture, might brake stuff
+                if (hitCollider != null) { // [0] - experimental fiture, might break stuff
 
                     // The ground is obviously not an Obstacle 
                     if (hitCollider[0].CompareTag(tag: "Ground"))
@@ -126,7 +128,7 @@ public class AStarLite : MonoBehaviour {
             return null;
 
         // Convert destination from world to grid position
-        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(position: destination);
+        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(destination);
         Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(transform.position); 
 
         // Set a debug position that can be show while developing
@@ -144,67 +146,120 @@ public class AStarLite : MonoBehaviour {
         bool isDoneFindingPath = false;
         int pickedOrder = 1;
 
-        while (!isDoneFindingPath)
-        {
-            //Remove the current node from the list of nodes that should be checked. 
+        while (!isDoneFindingPath) {
+            // Remove the current node from the list of nodes that should be checked. 
             nodesToCheck.Remove(currentNode);
 
-            //Set the pick order
+            // Set the pick order
             currentNode.pickedOrder = pickedOrder;
 
             pickedOrder++;
 
-            //Add the current node to the checked list
+            // Add the current node to the checked list
             nodesChecked.Add(currentNode);
 
-            //Yay! We found the destination
-            if (currentNode.gridPosition == destinationGridPoint)
-            {
+            // Yay! We found the destination
+            if (currentNode.gridPosition == destinationGridPoint) {
                 isDoneFindingPath = true;
                 break;
             }
 
-            //Calculate cost for all nodes
+            // Calculate cost for all nodes
             CalculateCostsForNodeAndNeighbours(currentNode, currentPositionGridPoint, destinationGridPoint);
 
-            //Check if the neighbour nodes should be considered
-            foreach (AStarNode neighbourNode in currentNode.neighbours)
-            {
-                //Skip any node that has already been checked
+            // Check if the neighbour nodes should be considered
+            foreach (AStarNode neighbourNode in currentNode.neighbours) {
+                // Skip any node that has already been checked
                 if (nodesChecked.Contains(neighbourNode))
                     continue;
 
-                //Skip any node that is already on the list
+                // Skip any node that is already on the list
                 if (nodesToCheck.Contains(neighbourNode))
                     continue;
 
-                //Add the node to the list that we should check 
+                // Add the node to the list that we should check 
                 nodesToCheck.Add(neighbourNode);
             }
 
-            //Sort the list so that the items with the lowest Total cost (f cost) and if they have the same value then lets pick the one with the lowest cost to reach the goal
+            // Sort the list so that the items with the lowest Total cost (f cost) and if they have the same value then lets pick the one with the lowest cost to reach the goal
             nodesToCheck = nodesToCheck.OrderBy(x => x.fCostTotal).ThenBy(x => x.hCostDistanceFromGoal).ToList();
 
-            //Pick the node with the lowest cost as the next node
-            if (nodesToCheck.Count == 0)
-            {
+            // Pick the node with the lowest cost as the next node
+            if (nodesToCheck.Count == 0) {
+
                 Debug.LogWarning($"No nodes left in next nodes to check, we have no solution {transform.name}");
                 return null;
-            }
-            else
-            {
+
+            } else {
                 currentNode = nodesToCheck[0];
             }
         }
 
+        aiPath = CreatePathForAgent(currentPositionGridPoint);
+
         return null;
+    }
+
+    List<Vector3> CreatePathForAgent(Vector3Int currentPositionGridPoint) {
+        List<Vector3> aiPathResult = new List<Vector3>();
+        List<AStarNode> aiPath = new List<AStarNode>();
+
+        //Reverse the nodes to check as the last added node will be the AI destination
+        nodesChecked.Reverse();
+
+        bool isPathCreated = false;
+
+        AStarNode currentNode = nodesChecked[0];
+
+        aiPath.Add(currentNode);
+
+        // Failsafe
+        int attempts = 0;
+
+        while (!isPathCreated) {
+            
+            // go backwards with the lowest creation order
+            currentNode.neighbours = currentNode.neighbours.OrderBy(x => x.pickedOrder).ToList();
+
+            foreach (AStarNode aStarNode in currentNode.neighbours) {
+                
+                if (aiPath.Contains(currentNode) && nodesChecked.Contains(aStarNode)) {
+
+                    aiPath.Add(aStarNode);
+                    currentNode = aStarNode;
+
+                    break;
+                }
+            }
+
+            if (currentNode == startNode) 
+                isPathCreated = true;
+    
+            if (attempts > 1000) {
+
+                Debug.LogWarning("CreatePathForAgent failed after too many attempts");
+                break;
+            }
+
+            attempts++;
+        }
+
+        foreach (AStarNode aStarNode in aiPath) {
+            aiPathResult.Add(ConvertGridPositionToWorldPosition(aStarNode));
+        }
+
+        // Flipp our result
+        aiPathResult.Reverse();
+
+        return aiPathResult;
     }
 
     void CalculateCostsForNodeAndNeighbours(AStarNode aStarNode, Vector3Int aiPosition, Vector3Int aiDestination) {
         aStarNode.CalculateCostsForNode(aiPosition, aiDestination);
 
-        foreach (AStarNode neighbourNode in aStarNode.neighbours)
+        foreach (AStarNode neighbourNode in aStarNode.neighbours) {
             neighbourNode.CalculateCostsForNode(aiPosition, aiDestination);
+        }
     }
 
     // A helper function that helps us to find our start note.
@@ -249,20 +304,35 @@ public class AStarLite : MonoBehaviour {
                 Gizmos.DrawWireCube(center: ConvertGridPositionToWorldPosition(aStarNode: aStarNodes[x, z]), size: new Vector3(x: cellSize, y: cellSize, z: cellSize));
             }
 
-        foreach (AStarNode nodesChecked in nodesChecked) {
+        foreach (AStarNode checkedNode in nodesChecked) {
 
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(nodesChecked), 1.0f);
+            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(checkedNode), 1.0f);
         }
 
-        foreach (AStarNode nodesChecked in nodesToCheck) {
+        foreach (AStarNode toCheckNode in nodesToCheck) {
             
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(nodesChecked), 1.0f);
+            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(toCheckNode), 1.0f);
+        }
+
+        Vector3 lastAIPoint = Vector3.zero;
+        bool isFirstStep = true;
+
+        Gizmos.color = Color.black;
+
+        foreach (Vector3 point in aiPath) {
+
+            if (!isFirstStep)
+                Gizmos.DrawLine(lastAIPoint, point);
+
+            lastAIPoint = point;
+
+            isFirstStep = false;    
         }
 
         // Draw start position
-        Gizmos.color = Color.blue;
+        Gizmos.color = Color.black;
         Gizmos.DrawSphere(center: startPositionDebug, radius: 1f);
 
         // Draw end position
