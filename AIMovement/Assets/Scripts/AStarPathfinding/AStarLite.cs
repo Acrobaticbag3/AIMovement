@@ -94,29 +94,29 @@ public class AStarLite : MonoBehaviour {
                 // Check northern neighbours, if we're on the edge don't add it
                 if (z - 1 >= 0) {
 
-                    if (!aStarNodes[x, z].isObstacle) 
-                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]);
+                    if (!aStarNodes[x, z -1].isObstacle) 
+                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z -1]);
                 } 
 
                 // Check Southern neighbours, if we're on the edge don't add it 
                 if (z + 1 <= gridSizeZ - 1) {
 
-                    if (!aStarNodes[x, z].isObstacle) 
-                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]);
+                    if (!aStarNodes[x, z +1].isObstacle) 
+                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z +1]);
                 }  
 
                 // Check eastern neighbours, if we're on the edge don't add it
                 if (x - 1 >= 0) {
 
-                    if (!aStarNodes[x, z].isObstacle) 
-                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]);
+                    if (!aStarNodes[x -1, z].isObstacle) 
+                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x -1, z]);
                 } 
 
                 // Check Western neighbours, if we're on the edge don't add it
                 if (x + 1 <= gridSizeX - 1) {
 
-                    if (!aStarNodes[x, z].isObstacle) 
-                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x, z]); 
+                    if (!aStarNodes[x +1, z].isObstacle) 
+                        aStarNodes[x, z].neighbours.Add(item: aStarNodes[x +1, z]); 
                 }
             }        
     }
@@ -127,7 +127,7 @@ public class AStarLite : MonoBehaviour {
 
         // Convert destination from world to grid position
         Vector3Int destinationGridPoint = ConvertWorldToGridPoint(position: destination);
-        Vector3Int currentPositionGridPoint = Vector3Int.FloorToInt(v: transform.position); 
+        Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(transform.position); 
 
         // Set a debug position that can be show while developing
         destinationPositionDebug = destination;
@@ -144,45 +144,55 @@ public class AStarLite : MonoBehaviour {
         bool isDoneFindingPath = false;
         int pickedOrder = 1;
 
-        while (!isDoneFindingPath) {
+        while (!isDoneFindingPath)
+        {
+            //Remove the current node from the list of nodes that should be checked. 
             nodesToCheck.Remove(currentNode);
 
+            //Set the pick order
             currentNode.pickedOrder = pickedOrder;
 
             pickedOrder++;
 
+            //Add the current node to the checked list
             nodesChecked.Add(currentNode);
 
-            // Are we done?
-            if (currentNode.gridPosition == destinationGridPoint) {
-                
-                // if yes than we found our destination
-                isDoneFindingPath  = true;
+            //Yay! We found the destination
+            if (currentNode.gridPosition == destinationGridPoint)
+            {
+                isDoneFindingPath = true;
                 break;
             }
 
-            // Calculates cost for all nodes
+            //Calculate cost for all nodes
             CalculateCostsForNodeAndNeighbours(currentNode, currentPositionGridPoint, destinationGridPoint);
 
-            foreach (AStarNode neighbourNode in currentNode.neighbours) {
-                
+            //Check if the neighbour nodes should be considered
+            foreach (AStarNode neighbourNode in currentNode.neighbours)
+            {
+                //Skip any node that has already been checked
                 if (nodesChecked.Contains(neighbourNode))
                     continue;
 
+                //Skip any node that is already on the list
                 if (nodesToCheck.Contains(neighbourNode))
                     continue;
 
+                //Add the node to the list that we should check 
                 nodesToCheck.Add(neighbourNode);
             }
 
+            //Sort the list so that the items with the lowest Total cost (f cost) and if they have the same value then lets pick the one with the lowest cost to reach the goal
             nodesToCheck = nodesToCheck.OrderBy(x => x.fCostTotal).ThenBy(x => x.hCostDistanceFromGoal).ToList();
 
-            if (nodesToCheck.Count == 0) {
-
-                Debug.LogWarning($"No nodes left in next nodes to check, no solution found");
+            //Pick the node with the lowest cost as the next node
+            if (nodesToCheck.Count == 0)
+            {
+                Debug.LogWarning($"No nodes left in next nodes to check, we have no solution {transform.name}");
                 return null;
-
-            } else {
+            }
+            else
+            {
                 currentNode = nodesToCheck[0];
             }
         }
