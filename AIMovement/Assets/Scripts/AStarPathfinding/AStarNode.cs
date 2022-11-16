@@ -53,10 +53,9 @@ public class AStarNode {
         if (isCostCalculated)
             return;
     
-        gCostDistanceFromStart = Mathf.Abs(gridPosition.x - aiPosition.x) + Mathf.Abs(gridPosition.z - aiPosition.z);
-        hCostDistanceFromGoal = Mathf.Abs(gridPosition.x - aiDestination.x) + Mathf.Abs(gridPosition.z - aiDestination.z);
+        gCostDistanceFromStart = Mathf.Abs(value: gridPosition.x - aiPosition.x) + Mathf.Abs(value: gridPosition.z - aiPosition.z);
+        hCostDistanceFromGoal = Mathf.Abs(value: gridPosition.x - aiDestination.x) + Mathf.Abs(value: gridPosition.z - aiDestination.z);
         fCostTotal = gCostDistanceFromStart + hCostDistanceFromGoal;
-        
         isCostCalculated = true;
     }
 }

@@ -26,7 +26,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+/*
+class Tree{
+    GameObject unit;
+    Node root;
 
+    public Tree(GameObject unit){
+        this.unit = unit;
+        unit.GetComponent<AI>().MoveToTarget()
+    }
+}
+*/
 public class AStarLite : MonoBehaviour {
 
     [Header(header: "Grid creation")]
@@ -47,7 +57,7 @@ public class AStarLite : MonoBehaviour {
 
     [Header(header: "Debugging")]
     Vector3 startPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
-    Vector3 destinationPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
+    [SerializeField] Vector3 destinationPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
 
     // Start is called before the first frame update
     void Start() {
@@ -128,8 +138,8 @@ public class AStarLite : MonoBehaviour {
             return null;
 
         // Convert destination from world to grid position
-        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(destination);
-        Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(transform.position); 
+        Vector3Int destinationGridPoint = ConvertWorldToGridPoint(position: destination);
+        Vector3Int currentPositionGridPoint = ConvertWorldToGridPoint(position: transform.position); 
 
         // Set a debug position that can be show while developing
         destinationPositionDebug = destination;
@@ -148,7 +158,7 @@ public class AStarLite : MonoBehaviour {
 
         while (!isDoneFindingPath) {
             // Remove the current node from the list of nodes that should be checked. 
-            nodesToCheck.Remove(currentNode);
+            nodesToCheck.Remove(item: currentNode);
 
             // Set the pick order
             currentNode.pickedOrder = pickedOrder;
@@ -156,46 +166,51 @@ public class AStarLite : MonoBehaviour {
             pickedOrder++;
 
             // Add the current node to the checked list
-            nodesChecked.Add(currentNode);
-
+            nodesChecked.Add(item: currentNode);
+            Debug.Log(message: destinationGridPoint);
             // Yay! We found the destination
+            if(currentNode.hCostDistanceFromGoal == 0)
+            {
+                Debug.Log(message: $"Start:{currentNode.gridPosition} ");
+                Debug.Log(message: $"Goal:{destinationGridPoint} ");
+            }
             if (currentNode.gridPosition == destinationGridPoint) {
                 isDoneFindingPath = true;
                 break;
             }
 
             // Calculate cost for all nodes
-            CalculateCostsForNodeAndNeighbours(currentNode, currentPositionGridPoint, destinationGridPoint);
+            CalculateCostsForNodeAndNeighbours(aStarNode: currentNode, aiPosition: currentPositionGridPoint, aiDestination: destinationGridPoint);
 
             // Check if the neighbour nodes should be considered
             foreach (AStarNode neighbourNode in currentNode.neighbours) {
                 // Skip any node that has already been checked
-                if (nodesChecked.Contains(neighbourNode))
+                if (nodesChecked.Contains(item: neighbourNode))
                     continue;
 
                 // Skip any node that is already on the list
-                if (nodesToCheck.Contains(neighbourNode))
+                if (nodesToCheck.Contains(item: neighbourNode))
                     continue;
 
                 // Add the node to the list that we should check 
-                nodesToCheck.Add(neighbourNode);
+                nodesToCheck.Add(item: neighbourNode);
             }
 
             // Sort the list so that the items with the lowest Total cost (f cost) and if they have the same value then lets pick the one with the lowest cost to reach the goal
-            nodesToCheck = nodesToCheck.OrderBy(x => x.fCostTotal).ThenBy(x => x.hCostDistanceFromGoal).ToList();
+            nodesToCheck = nodesToCheck.OrderBy(keySelector: x => x.fCostTotal).ThenBy(keySelector: x => x.hCostDistanceFromGoal).ToList();
 
             // Pick the node with the lowest cost as the next node
             if (nodesToCheck.Count == 0) {
 
-                Debug.LogWarning($"No nodes left in next nodes to check, we have no solution {transform.name}");
+                Debug.LogWarning(message: $"No nodes left in next nodes to check, we have no solution {transform.name}");
                 return null;
 
             } else {
-                currentNode = nodesToCheck[0];
+                currentNode = nodesToCheck[index: 0];
             }
         }
 
-        aiPath = CreatePathForAgent(currentPositionGridPoint);
+        aiPath = CreatePathForAgent(currentPositionGridPoint: currentPositionGridPoint);
 
         return null;
     }
@@ -209,9 +224,9 @@ public class AStarLite : MonoBehaviour {
 
         bool isPathCreated = false;
 
-        AStarNode currentNode = nodesChecked[0];
+        AStarNode currentNode = nodesChecked[index: 0];
 
-        aiPath.Add(currentNode);
+        aiPath.Add(item: currentNode);
 
         // Failsafe
         int attempts = 0;
@@ -219,13 +234,13 @@ public class AStarLite : MonoBehaviour {
         while (!isPathCreated) {
             
             // go backwards with the lowest creation order
-            currentNode.neighbours = currentNode.neighbours.OrderBy(x => x.pickedOrder).ToList();
+            currentNode.neighbours = currentNode.neighbours.OrderBy(keySelector: x => x.pickedOrder).ToList();
 
             foreach (AStarNode aStarNode in currentNode.neighbours) {
                 
-                if (aiPath.Contains(currentNode) && nodesChecked.Contains(aStarNode)) {
+                if (aiPath.Contains(item: currentNode) && nodesChecked.Contains(item: aStarNode)) {
 
-                    aiPath.Add(aStarNode);
+                    aiPath.Add(item: aStarNode);
                     currentNode = aStarNode;
 
                     break;
@@ -237,7 +252,7 @@ public class AStarLite : MonoBehaviour {
     
             if (attempts > 1000) {
 
-                Debug.LogWarning("CreatePathForAgent failed after too many attempts");
+                Debug.LogWarning(message: "CreatePathForAgent failed after too many attempts");
                 break;
             }
 
@@ -245,7 +260,7 @@ public class AStarLite : MonoBehaviour {
         }
 
         foreach (AStarNode aStarNode in aiPath) {
-            aiPathResult.Add(ConvertGridPositionToWorldPosition(aStarNode));
+            aiPathResult.Add(item: ConvertGridPositionToWorldPosition(aStarNode: aStarNode));
         }
 
         // Flipp our result
@@ -255,10 +270,10 @@ public class AStarLite : MonoBehaviour {
     }
 
     void CalculateCostsForNodeAndNeighbours(AStarNode aStarNode, Vector3Int aiPosition, Vector3Int aiDestination) {
-        aStarNode.CalculateCostsForNode(aiPosition, aiDestination);
+        aStarNode.CalculateCostsForNode(aiPosition: aiPosition, aiDestination: aiDestination);
 
         foreach (AStarNode neighbourNode in aStarNode.neighbours) {
-            neighbourNode.CalculateCostsForNode(aiPosition, aiDestination);
+            neighbourNode.CalculateCostsForNode(aiPosition: aiPosition, aiDestination: aiDestination);
         }
     }
 
@@ -307,13 +322,13 @@ public class AStarLite : MonoBehaviour {
         foreach (AStarNode checkedNode in nodesChecked) {
 
             Gizmos.color = Color.green;
-            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(checkedNode), 1.0f);
+            Gizmos.DrawSphere(center: ConvertGridPositionToWorldPosition(aStarNode: checkedNode), radius: 1.0f);
         }
 
         foreach (AStarNode toCheckNode in nodesToCheck) {
             
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(ConvertGridPositionToWorldPosition(toCheckNode), 1.0f);
+            Gizmos.DrawSphere(center: ConvertGridPositionToWorldPosition(aStarNode: toCheckNode), radius: 1.0f);
         }
 
         Vector3 lastAIPoint = Vector3.zero;
@@ -324,7 +339,7 @@ public class AStarLite : MonoBehaviour {
         foreach (Vector3 point in aiPath) {
 
             if (!isFirstStep)
-                Gizmos.DrawLine(lastAIPoint, point);
+                Gizmos.DrawLine(from: lastAIPoint, to: point);
 
             lastAIPoint = point;
 
