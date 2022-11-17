@@ -263,7 +263,7 @@ public class AStarLite : MonoBehaviour {
             aiPathResult.Add(item: ConvertGridPositionToWorldPosition(aStarNode: aStarNode));
         }
 
-        // Flipp our result
+        // Flip our result
         aiPathResult.Reverse();
 
         return aiPathResult;
