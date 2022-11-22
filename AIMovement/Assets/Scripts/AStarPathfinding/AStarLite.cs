@@ -26,7 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using System.Threading;
+
 /*
 class Tree{
     GameObject unit;
@@ -59,12 +59,17 @@ public class AStarLite : MonoBehaviour {
     [Header(header: "Debugging")]
     Vector3 startPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
     [SerializeField] Vector3 destinationPositionDebug = new Vector3(x: 1000, y: 0, z: 0);
+    bool started = false;
 
     // Start is called before the first frame update
     void Start() {
         CreateGrid();
+    } 
 
-        FindOurPath(destination: new Vector3(x: 32, y: 0, z: 17));
+    private void Update() {
+        if (Input.GetKey(key: KeyCode.Space)) {
+            FindOurPath(destination: new Vector3(x: 32, y: 0, z: 0));
+        }
     }
 
     void CreateGrid() {
@@ -134,9 +139,9 @@ public class AStarLite : MonoBehaviour {
             }        
     }
 
-    public List<Vector3> FindOurPath(Vector3 destination) {
+    public void FindOurPath(Vector3 destination) {
         if (aStarNodes == null)
-            return null;
+            return;
 
         // Convert destination from world to grid position
         Vector3Int destinationGridPoint = ConvertWorldToGridPoint(position: destination);
@@ -204,17 +209,17 @@ public class AStarLite : MonoBehaviour {
             if (nodesToCheck.Count == 0) {
 
                 Debug.LogWarning(message: $"No nodes left in next nodes to check, we have no solution {transform.name}");
-                return null;
+                 return ;
 
             } else {
                 currentNode = nodesToCheck[index: 0];
             }
-            Thread.Sleep(1000);
+            Debug.Log("A*");
+            return;
         }
-
+        
         aiPath = CreatePathForAgent(currentPositionGridPoint: currentPositionGridPoint);
 
-        return null;
     }
 
     List<Vector3> CreatePathForAgent(Vector3Int currentPositionGridPoint) {
