@@ -26,6 +26,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Threading;
 /*
 class Tree{
     GameObject unit;
@@ -208,6 +209,7 @@ public class AStarLite : MonoBehaviour {
             } else {
                 currentNode = nodesToCheck[index: 0];
             }
+            Thread.Sleep(1000);
         }
 
         aiPath = CreatePathForAgent(currentPositionGridPoint: currentPositionGridPoint);
