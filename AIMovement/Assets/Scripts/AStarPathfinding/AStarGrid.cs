@@ -16,8 +16,8 @@ public class AStarGrid : MonoBehaviour {
 
     void Start() {     
         diamaterOfNode = radiusOfNode * 2;
-        gridSizeX = Mathf.RoundToInt(sizeOfWorldGrid.x/diamaterOfNode * 2);     // Gives us the amount of nodes that can fit in our grid for x axis
-        gridSizeY = Mathf.RoundToInt(sizeOfWorldGrid.y/diamaterOfNode * 2);     // Gives us the amount of nodes that can fit in our grid for y axis
+        gridSizeX = Mathf.RoundToInt(sizeOfWorldGrid.x/diamaterOfNode);     // Gives us the amount of nodes that can fit in our grid for x axis
+        gridSizeY = Mathf.RoundToInt(sizeOfWorldGrid.y/diamaterOfNode);     // Gives us the amount of nodes that can fit in our grid for y axis
 
         CreateGrid();
     }
@@ -31,11 +31,29 @@ public class AStarGrid : MonoBehaviour {
             for(int y = 0; y < gridSizeY; y++) {
                 Vector3 worldPoint = bottomLeftOfWorld + Vector3.right * (x * diamaterOfNode * radiusOfNode) + Vector3.forward * (y * diamaterOfNode * radiusOfNode);       // Get the world position of our node collision
                 bool isWalkable = !(Physics.CheckSphere(worldPoint, radiusOfNode, unwalkableMask));                                                                         // Check for collision     
-                grid[x,y] = new AStarNode(isWalkable, worldPoint);
+                grid[x,y] = new AStarNode(isWalkable, worldPoint, x, y);
             }
         }
     }
+    
+    public List<AStarNode> GetNeighbours(AStarNode node) {
+        List<AStarNode> neighbours = new List<AStarNode>();
 
+        for (int x = -1; x <= 1; x++) 
+            for (int y = -1; y <= 1; y++) {
+                if (x == 0 && y == 0) 
+                    continue;
+
+                int checkX = node.gridX + x;
+                int checkY = node.gridY + y;
+
+                if (checkX >= 0 && checkX < gridSizeX && checkY  >= 0 && checkY < gridSizeY) {
+                    neighbours.Add(grid[checkX,checkY]);
+                }
+            }
+
+        return neighbours;
+    }
 
     public AStarNode NodeFromWorldPoint(Vector3 nodeWorldPosition) {                                // Finds a specific node, say the one the player is standing on
         float percentX = (nodeWorldPosition.x + sizeOfWorldGrid.x / 2) / sizeOfWorldGrid.x;         // Get position for x
@@ -48,7 +66,7 @@ public class AStarGrid : MonoBehaviour {
         return grid[x,y];
     }
 
-
+    public List<AStarNode> path;
     void OnDrawGizmos() {
         Gizmos.DrawWireCube(transform.position, new Vector3(sizeOfWorldGrid.x, 1 ,sizeOfWorldGrid.y));      // Since we are using Vector2 we have to represent z axis with y
 
@@ -60,6 +78,9 @@ public class AStarGrid : MonoBehaviour {
                 /*if (playerNode == nodes) // proof that grid track works
                     Gizmos.color = Color.cyan;*/
 
+                if (path != null)
+                    if (path.Contains(nodes))
+                        Gizmos.color = Color.black;
                 Gizmos.DrawCube(nodes.nodeWorldPosition, Vector3.one * (diamaterOfNode-.1f));
             }
         }
