@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 public class AStarPathfinding : MonoBehaviour {
 
@@ -13,28 +14,29 @@ public class AStarPathfinding : MonoBehaviour {
     }
 
     void Update() {
-        FindPath(seeker.position, target.position);
+        FindPath(target.position, seeker.position);
     }
    
     void FindPath(Vector3 startPos, Vector3 targetPos) {
+
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+
         AStarNode startNode = grid.NodeFromWorldPoint(startPos);            // Get world position for our start node
         AStarNode targetNode = grid.NodeFromWorldPoint(targetPos);          // Get world position for our destination 
 
-        List<AStarNode> openSetOfNodes = new List<AStarNode>();                 // List of the nodes we want to evaluate 
+        Heap<AStarNode> openSetOfNodes = new Heap<AStarNode>(grid.MaxSize);                 // List of the nodes we want to evaluate 
         HashSet<AStarNode> closedSetOfNodes = new HashSet<AStarNode>();         // List of nodes we have evaluated
         openSetOfNodes.Add(startNode);
 
         while (openSetOfNodes.Count > 0) {
-            AStarNode currentNode = openSetOfNodes[0];
-            for (int i = 1; i < openSetOfNodes.Count; i++) {
-                if (openSetOfNodes[i].fCost < currentNode.fCost || openSetOfNodes[i].fCost == currentNode.fCost && openSetOfNodes[i].hCost < currentNode.hCost)
-                    currentNode = openSetOfNodes[i];
-            } 
-            
-            openSetOfNodes.Remove(currentNode);         // Remove current Node from open
-            closedSetOfNodes.Add(currentNode);          // Att current to Node closed
+            AStarNode currentNode = openSetOfNodes.RemoveFirst();
+            closedSetOfNodes.Add(currentNode);          // Add current to Node closed
 
             if (currentNode == targetNode) {
+                sw.Stop();
+                print("Path found: " + sw.ElapsedMilliseconds + " ms");
+
                 RetraceMainPath(startNode, targetNode);              // Return if our currentNode is the targetNode
                 return;
             }

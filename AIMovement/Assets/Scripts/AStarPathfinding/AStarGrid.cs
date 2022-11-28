@@ -5,7 +5,7 @@ using UnityEngine;
 public class AStarGrid : MonoBehaviour {
 
     // public Transform player; proof that grid track works
-    
+    public bool onlyDisplayPathGizmos;
     AStarNode[,] grid;                  // 2D Node array representing our grid
     public Vector2 sizeOfWorldGrid;     // Represents the coardinates of our grid
     public float radiusOfNode;          // Size of induvidual node
@@ -22,6 +22,11 @@ public class AStarGrid : MonoBehaviour {
         CreateGrid();
     }
 
+    public int MaxSize {
+		get {
+			return gridSizeX * gridSizeY;
+		}
+	}
 
     void CreateGrid() {
         grid = new AStarNode[gridSizeX,gridSizeY];
