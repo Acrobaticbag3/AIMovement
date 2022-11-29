@@ -23,14 +23,14 @@ public class CheckEnemyInAttackRange : Node
     }
 
     public override NodeState Evaluate() {
-        object t = GetData("target");
+        object t = GetData(key: "target");
         if (t == null) {
             state = NodeState.FAILURE;
             return state;
         }
 
         Transform target = (Transform)t;
-        if (Vector3.Distance(_transform.position, target.position) <= RussyBT.attackRange) {
+        if (Vector3.Distance(a: _transform.position, b: target.position) <= RussyBT.attackRange) {
             // _animator.SetBool("Attacking", true); Use one we get animations
             // _animator.SetBool("Walking", false); Use one we get animations
 

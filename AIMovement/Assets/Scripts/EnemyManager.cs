@@ -28,6 +28,6 @@ public class EnemyManager : MonoBehaviour {
     }
 
     private void _Die() {
-        Destroy(gameObject);
+        Destroy(obj: gameObject);
     }
 }

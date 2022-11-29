@@ -21,11 +21,11 @@ public class TaskGoToTarget : Node {
     }
 
     public override NodeState Evaluate() {
-        Transform target = (Transform)GetData("target");
+        Transform target = (Transform)GetData(key: "target");
 
-        if (Vector3.Distance(_transform.position, target.position) >0.01f) {
-            _transform.position = Vector3.MoveTowards(_transform.position, target.position, RussyBT.speed * Time.deltaTime);
-            _transform.LookAt(target.position);
+        if (Vector3.Distance(a: _transform.position, b: target.position) >0.01f) {
+            _transform.position = Vector3.MoveTowards(current: _transform.position, target: target.position, maxDistanceDelta: RussyBT.speed * Time.deltaTime);
+            _transform.LookAt(worldPosition: target.position);
         }
 
         state = NodeState.RUNNING;

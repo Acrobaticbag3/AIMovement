@@ -37,9 +37,9 @@ public class AStarNode : IHeapItem<AStarNode> {
 	}
 
 	public int CompareTo(AStarNode nodeToCompare) {
-		int compare = fCost.CompareTo(nodeToCompare.fCost);
+		int compare = fCost.CompareTo(value: nodeToCompare.fCost);
 		if (compare == 0) {
-			compare = hCost.CompareTo(nodeToCompare.hCost);
+			compare = hCost.CompareTo(value: nodeToCompare.hCost);
 		}
 		return -compare;
 	}                            

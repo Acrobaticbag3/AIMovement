@@ -28,7 +28,7 @@ public class TaskAttack : Node
 
     public override NodeState Evaluate() {
 
-        Transform target = (Transform)GetData("target");
+        Transform target = (Transform)GetData(key: "target");
         if (target != _lastTarget) {
             _enemyManager = target.GetComponent<EnemyManager>();
             _lastTarget = target;
@@ -40,9 +40,9 @@ public class TaskAttack : Node
             bool enemyIsDead = _enemyManager.TakeHit();
             if (enemyIsDead) {
 
-                ClearData("target");
-                _animator.SetBool("Attacking", false);
-                _animator.SetBool("Walking", true);
+                ClearData(key: "target");
+                _animator.SetBool(name: "Attacking", value: false);
+                _animator.SetBool(name: "Walking", value: true);
 
             } else {
 

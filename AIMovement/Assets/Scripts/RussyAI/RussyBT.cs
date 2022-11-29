@@ -30,18 +30,17 @@ public class RussyBT : Tree {
     protected override Node SetupTree() {
 
         // The root of our tree
-        Node root = new Selector(new List<Node> {
+        Node root = new Selector(children: new List<Node> {
 
-            new Sequence(new List<Node> {
-                new CheckEnemyInAttackRange(transform),
-                new TaskAttack(transform),
+            new Sequence(children: new List<Node> {
+                new CheckEnemyInAttackRange(transform: transform),
+                new TaskAttack(transform: transform),
             }),
-            new Sequence(new List<Node> {
-                new CheckEnemyInFOVRange(transform),
-                new TaskGoToTarget(transform),
+            new Sequence(children: new List<Node> {
+                new CheckEnemyInFOVRange(transform: transform),
+                new TaskGoToTarget(transform: transform),
             }),
-            
-            new TaskPatrol(transform, waypoints),
+            new TaskPatrol(transform: transform, waypoints: waypoints),
         });
 
         return root;

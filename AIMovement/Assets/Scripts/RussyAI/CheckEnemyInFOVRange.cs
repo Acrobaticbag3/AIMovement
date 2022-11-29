@@ -29,12 +29,12 @@ public class CheckEnemyInFOVRange : Node {
     }
 
     public override NodeState Evaluate() {
-        object t = GetData("target");
+        object t = GetData(key: "target");
         if (t == null) {
-            Collider[] colliders = Physics.OverlapSphere(_transform.position, RussyBT.fovRange, _enemyLayerMask);
+            Collider[] colliders = Physics.OverlapSphere(position: _transform.position, radius: RussyBT.fovRange, layerMask: _enemyLayerMask);
 
             if (colliders.Length > 0) {
-                parent.parent.SetData("target", colliders[0].transform); // [0]
+                parent.parent.SetData(key: "target", value: colliders[0].transform); // [0]
                 // _animator.SetBool("Walking", true); Use later when we get animations
                 state = NodeState.SUCCESS;
                 return state;
