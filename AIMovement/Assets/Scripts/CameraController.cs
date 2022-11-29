@@ -8,7 +8,7 @@ public class CameraController : MonoBehaviour
 {
 
     public Camera mainCamera;
-    public Camera weaponCamera;
+    // public Camera weaponCamera;
     float sensX = 1f;
     float sensY = 1f;
     float baseFov = 90f;
@@ -41,7 +41,7 @@ public class CameraController : MonoBehaviour
         fov = Mathf.Lerp(fov, baseFov + addedFov, 0.5f);
         fov = Mathf.Clamp(fov, baseFov, maxFov);
         mainCamera.fieldOfView = fov;
-        weaponCamera.fieldOfView = fov;
+        // weaponCamera.fieldOfView = fov;
 
         currentLook = Vector2.Lerp(currentLook, currentLook + sway, 0.8f);
         curTilt = Mathf.LerpAngle(curTilt, wishTilt * wallRunTilt, 0.05f);

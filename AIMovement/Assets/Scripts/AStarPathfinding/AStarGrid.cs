@@ -5,16 +5,16 @@ using UnityEngine;
 public class AStarGrid : MonoBehaviour {
 
     // public Transform player; proof that grid track works
-    public bool onlyDisplayPathGizmos;
     AStarNode[,] grid;                  // 2D Node array representing our grid
     public Vector2 sizeOfWorldGrid;     // Represents the coordinates of our grid
     public float radiusOfNode;          // Size of individual node
     public LayerMask unwalkableMask;
+    public bool displayGridGizmos;
 
     float diamaterOfNode;
     int gridSizeX, gridSizeY;
 
-    void Start() {     
+    void Awake() {     
         diamaterOfNode = radiusOfNode * 2;
         gridSizeX = Mathf.RoundToInt(f: sizeOfWorldGrid.x/diamaterOfNode);     // Gives us the amount of nodes that can fit in our grid for x axis
         gridSizeY = Mathf.RoundToInt(f: sizeOfWorldGrid.y/diamaterOfNode);     // Gives us the amount of nodes that can fit in our grid for y axis
@@ -71,22 +71,16 @@ public class AStarGrid : MonoBehaviour {
         return grid[x,y];
     }
 
-    public List<AStarNode> path;
     void OnDrawGizmos() {
         Gizmos.DrawWireCube(center: transform.position, size: new Vector3(x: sizeOfWorldGrid.x, y: 1 ,z: sizeOfWorldGrid.y));      // Since we are using Vector2 we have to represent z axis with y
 
-        if (grid != null){ 
+        if (grid != null && displayGridGizmos){ 
             // AStarNode playerNode = NodeFromWorldPoint(player.position); // proof that grid track works
             foreach (AStarNode nodes in grid) {
                 Gizmos.color = (nodes.isWalkable)?Color.white:Color.red;                                    // Show if node is walkable red = not walkable white = walkable
-
+                Gizmos.DrawCube(center: nodes.nodeWorldPosition, size: Vector3.one * (diamaterOfNode-.1f));
                 /*if (playerNode == nodes) // proof that grid track works
                     Gizmos.color = Color.cyan;*/
-
-                if (path != null)
-                    if (path.Contains(item: nodes))
-                        Gizmos.color = Color.black;
-                Gizmos.DrawCube(center: nodes.nodeWorldPosition, size: Vector3.one * (diamaterOfNode-.1f));
             }
         }
     }

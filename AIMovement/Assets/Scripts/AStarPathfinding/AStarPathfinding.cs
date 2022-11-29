@@ -2,64 +2,78 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
+using System;
 
 public class AStarPathfinding : MonoBehaviour {
 
-    public Transform seeker, target;
+    PathRequestManager requestManager;
 
     AStarGrid grid;
 
-    void Awake  () {
+    void Awake () {
+        requestManager = GetComponent<PathRequestManager>();
         grid = GetComponent<AStarGrid>();
     }
 
-    void Update() {
-        FindPath(startPos: target.position, targetPos: seeker.position);
+    public void StartFindPath(Vector3 startPos, Vector3 targetPos) {
+        StartCoroutine(FindPath(startPos, targetPos));
     }
    
-    void FindPath(Vector3 startPos, Vector3 targetPos) {
+    IEnumerator FindPath(Vector3 startPos, Vector3 targetPos) {
 
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
+        Vector3[] waypoints = new Vector3[0];
+        bool didPathSucceed = false;
+
         AStarNode startNode = grid.NodeFromWorldPoint(nodeWorldPosition: startPos);            // Get world position for our start node
         AStarNode targetNode = grid.NodeFromWorldPoint(nodeWorldPosition: targetPos);          // Get world position for our destination 
 
-        Heap<AStarNode> openSetOfNodes = new Heap<AStarNode>(maxHeapSize: grid.MaxSize);                 // List of the nodes we want to evaluate 
-        HashSet<AStarNode> closedSetOfNodes = new HashSet<AStarNode>();                                  // List of nodes we have evaluated
-        openSetOfNodes.Add(item: startNode);
+        if (startNode.isWalkable && targetNode.isWalkable) {                                                 // Don't bother finding path unless both nodes are walkable
+            Heap<AStarNode> openSetOfNodes = new Heap<AStarNode>(maxHeapSize: grid.MaxSize);                 // List of the nodes we want to evaluate 
+            HashSet<AStarNode> closedSetOfNodes = new HashSet<AStarNode>();                                  // List of nodes we have evaluated
+            openSetOfNodes.Add(item: startNode);
 
-        while (openSetOfNodes.Count > 0) {
-            AStarNode currentNode = openSetOfNodes.RemoveFirst();
-            closedSetOfNodes.Add(item: currentNode);                             // Add current to Node closed
+            while (openSetOfNodes.Count > 0) {
+                AStarNode currentNode = openSetOfNodes.RemoveFirst();
+                closedSetOfNodes.Add(item: currentNode);                             // Add current to Node closed
 
-            if (currentNode == targetNode) {
-                sw.Stop();
-                print(message: "Path found: " + sw.ElapsedMilliseconds + " ms");
-
-                RetraceMainPath(startNode: startNode, endNode: targetNode);         // Return if our currentNode is the targetNode
-                return;
-            }
-
-            foreach (AStarNode neighbour in grid.GetNeighbours(node: currentNode)) {
-                if (!neighbour.isWalkable || closedSetOfNodes.Contains(item: neighbour)) {
-                    continue;
+                if (currentNode == targetNode) {
+                    sw.Stop();
+                    didPathSucceed = true;
+                    break;
                 }
-                
-                int updatedMovementCostToNeighbour = currentNode.gCost + GetDistance(nodeA: currentNode, nodeB: neighbour);           
-                if (updatedMovementCostToNeighbour < neighbour.gCost || !openSetOfNodes.Contains(item: neighbour)) {
-                    neighbour.gCost = updatedMovementCostToNeighbour; 
-                    neighbour.hCost = GetDistance(nodeA: neighbour, nodeB: targetNode);
-                    neighbour.parent = currentNode;
 
-                    if (!openSetOfNodes.Contains(item: neighbour))
-                        openSetOfNodes.Add(item: neighbour);
+                foreach (AStarNode neighbour in grid.GetNeighbours(node: currentNode)) {
+                    if (!neighbour.isWalkable || closedSetOfNodes.Contains(item: neighbour)) {
+                        continue;
+                    }
+                    
+                    int updatedMovementCostToNeighbour = currentNode.gCost + GetDistance(nodeA: currentNode, nodeB: neighbour);           
+                    if (updatedMovementCostToNeighbour < neighbour.gCost || !openSetOfNodes.Contains(item: neighbour)) {
+
+                        neighbour.gCost = updatedMovementCostToNeighbour; 
+                        neighbour.hCost = GetDistance(nodeA: neighbour, nodeB: targetNode);
+                        neighbour.parent = currentNode;
+
+                        if (!openSetOfNodes.Contains(item: neighbour))
+                            openSetOfNodes.Add(item: neighbour);
+                        else
+                            openSetOfNodes.UpdateItem(neighbour);
+                    }
                 }
             }
         }
+        yield return null;
+
+        if (didPathSucceed) {
+            waypoints = RetraceMainPath(startNode: startNode, endNode: targetNode);         // Return if our currentNode is the targetNode
+        }
+        requestManager.FinishedProcessingPath(waypoints, didPathSucceed);
     }
 
-    void RetraceMainPath(AStarNode startNode, AStarNode endNode) {
+    Vector3[] RetraceMainPath(AStarNode startNode, AStarNode endNode) {
         List<AStarNode> path = new List<AStarNode>();
         AStarNode currentNode = endNode;
 
@@ -67,10 +81,30 @@ public class AStarPathfinding : MonoBehaviour {
             path.Add(item: currentNode);
             currentNode = currentNode.parent;
         }
+        
+        Vector3[] waypoints = PathSimplification(path, startNode);
+        Array.Reverse(waypoints);
+        return waypoints;
+    }
 
-        path.Reverse();
+    Vector3[] PathSimplification(List<AStarNode> path, AStarNode startNode ) {
+        List<Vector3> waypoints = new List<Vector3>();
+        Vector2 directionOld = Vector2.zero;
 
-        grid.path = path;
+        for (int i = 1; i < path.Count; i ++) {
+
+            Vector2 directionNew = new Vector2(path[i-1].gridX - path[i].gridX,path[i-1].gridY - path[i].gridY);
+
+            if (directionNew != directionOld)                           // If this is the last node in the list, check to make sure the direction between this node and the startNode doesn't match directionOld
+                waypoints.Add(path[i-1].nodeWorldPosition); 
+
+            directionOld = directionNew;                                //  If this is true, then add this new node as a waypoint
+            if (i == path.Count - 1 && directionOld != new Vector2(path[i].gridX, path[i].gridY) - new Vector2(startNode.gridX, startNode.gridY))
+                waypoints.Add(path[path.Count-1].nodeWorldPosition); 
+
+        }
+
+        return waypoints.ToArray();
     }
 
     int GetDistance(AStarNode nodeA, AStarNode nodeB) {                         // Get distance between two nodes
