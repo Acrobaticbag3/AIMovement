@@ -10,7 +10,7 @@ public class AStarAgent : MonoBehaviour {
     int targetIndex;
     int rotationSpeed = 3;
 
-    void Start() {
+    void Update() {
         PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
     }
 
