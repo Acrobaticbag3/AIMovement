@@ -7,11 +7,20 @@ public class AStarAgent : MonoBehaviour {
     public Transform target;
     float speed = 20;
     Vector3[] path;
+    
     int targetIndex;
     int rotationSpeed = 3;
+    private Vector3 targetOldPosition;
+
+    void Awake() {
+        targetOldPosition = target.position;
+    }
 
     void Update() {
-        PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+        if (Vector3.Distance(targetOldPosition, target.position) > 1) {
+            PathRequestManager.RequestPath(transform.position, target.position, OnPathFound);
+            targetOldPosition = target.position;
+        }
     }
 
     public void OnPathFound(Vector3[] newPath, bool pathIsSuccessful) {
