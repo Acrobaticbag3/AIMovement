@@ -5,6 +5,7 @@ using UnityEngine;
 public class AStarAgent : MonoBehaviour {
 
     public Transform target;
+    public float searchRadius = 10f; // Maximum radius to search for an endpoint
     float speed = 10;
     Vector3[] path;
     
@@ -18,7 +19,11 @@ public class AStarAgent : MonoBehaviour {
 
     void Update() {
         if (Vector3.Distance(a: targetOldPosition, b: target.position) > 3) {
-            PathRequestManager.RequestPath(pathStart: transform.position, pathEnd: target.position, callback: OnPathFound);
+            // Calculate a random endpoint within the search radius
+            Vector3 randomOffset = Random.insideUnitSphere * searchRadius;
+            Vector3 randomTargetPosition = target.position + randomOffset;
+
+            PathRequestManager.RequestPath(pathStart: transform.position, pathEnd: randomTargetPosition, callback: OnPathFound);
             targetOldPosition = target.position;
         }
     }
