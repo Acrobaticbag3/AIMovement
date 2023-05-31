@@ -20,18 +20,25 @@
 
 using System.Collections.Generic;
 using BehaviorTree;
-public class RussyBT : Tree {
+
+public class RussyBT : Tree
+{
     public UnityEngine.Transform[] waypoints;
-    
+
     public static float speed = 5f;
-    public static float fovRange = 6f; 
+    public static float fovRange = 6f;
     public static float attackRange = 10f;
+    private AStarPathfinding _pathfinding; // Reference to your A* script
 
-    protected override Node SetupTree() {
+    public RussyBT(AStarPathfinding pathfinding)
+    {
+        _pathfinding = pathfinding;
+    }
 
+    protected override Node SetupTree()
+    {
         // The root of our tree
         Node root = new Selector(children: new List<Node> {
-
             new Sequence(children: new List<Node> {
                 new CheckEnemyInAttackRange(transform: transform),
                 new TaskAttack(transform: transform),
@@ -40,7 +47,7 @@ public class RussyBT : Tree {
                 new CheckEnemyInFOVRange(transform: transform),
                 new TaskGoToTarget(transform: transform),
             }),
-            new TaskPatrol(transform: transform, waypoints: waypoints),
+            new TaskPatrol(transform: transform, waypoints: waypoints, pathfinding: _pathfinding), // Pass the A* script reference
         });
 
         return root;

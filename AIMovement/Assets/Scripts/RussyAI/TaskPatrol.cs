@@ -14,57 +14,85 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using BehaviorTree;
-using UnityEngine.AI;
 
-public class TaskPatrol : Node {
+public class TaskPatrol : Node
+{
     private Transform _transform;
-
     private Transform[] _waypoints;
-    NavMeshAgent agent;
+    private AStarPathfinding _pathfinding; // Reference to your A* script
 
     private int _currentWaypointIndex = 0;
+    private Vector3[] _currentPath;
 
     private float _waitTime = 1f; // in seconds
     private float _waitCounter = 0f;
     private bool _waiting = false;
 
-    // Constructor for NavMeshAgent
-    public TaskPatrol(NavMeshAgent agent) => this.agent = agent;
-
-    // constructor gatering additional info such as waypoints, but also a referance to the agents preforming this task
-    public TaskPatrol(Transform transform, Transform[] waypoints) { 
+    public TaskPatrol(Transform transform, Transform[] waypoints, AStarPathfinding pathfinding)
+    {
         _transform = transform;
         _waypoints = waypoints;
+        _pathfinding = pathfinding;
     }
 
-    public override NodeState Evaluate() { // Overrides the node
-        if (_waiting) {
-
+    public override NodeState Evaluate()
+    {
+        if (_waiting)
+        {
             _waitCounter += Time.deltaTime;
-            if(_waitCounter < _waitTime) {
+            if (_waitCounter < _waitTime)
+            {
                 _waiting = false;
             }
+        }
+        else
+        {
+            Transform wp = _waypoints[_currentWaypointIndex];
 
-        } else {
-
-            Transform wp = _waypoints [_currentWaypointIndex];
-            
-            if (Vector3.Distance(a: _transform.position, b: wp.position) < 0.01f) {
+            if (Vector3.Distance(_transform.position, wp.position) < 0.01f)
+            {
                 _transform.position = wp.position;
                 _waitCounter = 0f;
                 _waiting = true;
 
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
-
-            } else {
-                _transform.position = Vector3.MoveTowards(current: _transform.position, target: wp.position, maxDistanceDelta: RussyBT.speed * Time.deltaTime);
-                _transform.LookAt(worldPosition: wp.position);
-            } 
+            }
+            else if (_currentPath == null || _currentPath.Length == 0)
+            {
+                Vector3 startPos = _transform.position;
+                Vector3 targetPos = wp.position;
+                _pathfinding.StartFindPath(startPos, targetPos, OnPathFound);
+            }
+            else
+            {
+                MoveToNextWaypoint();
+            }
         }
 
         state = NodeState.RUNNING;
         return state;
+    }
+
+    private void OnPathFound(Vector3[] path)
+    {
+        _currentPath = path;
+        MoveToNextWaypoint();
+    }
+
+    private void MoveToNextWaypoint()
+    {
+        if (_currentPath != null && _currentPath.Length > 0)
+        {
+            Vector3 nextPosition = _currentPath[0];
+            _transform.position = Vector3.MoveTowards(_transform.position, nextPosition, RussyBT.speed * Time.deltaTime);
+            _transform.LookAt(nextPosition);
+
+            if (Vector3.Distance(_transform.position, nextPosition) < 0.01f)
+            {
+                // Reached the current waypoint, remove it from the path
+                _currentPath = _currentPath[1..];
+            }
+        }
     }
 }
