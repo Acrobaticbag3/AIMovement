@@ -14,54 +14,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
 using BehaviorTree;
-using UnityEngine.AI;
 
 public class TaskPatrol : Node {
     private Transform _transform;
-
     private Transform[] _waypoints;
-    NavMeshAgent agent;
-
     private int _currentWaypointIndex = 0;
-
     private float _waitTime = 1f; // in seconds
     private float _waitCounter = 0f;
     private bool _waiting = false;
+    private AStarAgent _aStarAgent;
 
-    // Constructor for NavMeshAgent
-    public TaskPatrol(NavMeshAgent agent) => this.agent = agent;
-
-    // constructor gatering additional info such as waypoints, but also a referance to the agents preforming this task
-    public TaskPatrol(Transform transform, Transform[] waypoints) { 
+    public TaskPatrol(Transform transform, Transform[] waypoints, AStarAgent aStarAgent) {
         _transform = transform;
         _waypoints = waypoints;
+        _aStarAgent = aStarAgent;
     }
 
-    public override NodeState Evaluate() { // Overrides the node
+    public override NodeState Evaluate() {
         if (_waiting) {
-
             _waitCounter += Time.deltaTime;
-            if(_waitCounter < _waitTime) {
+            if (_waitCounter < _waitTime) {
                 _waiting = false;
             }
-
         } else {
+            Transform wp = _waypoints[_currentWaypointIndex];
 
-            Transform wp = _waypoints [_currentWaypointIndex];
-            
-            if (Vector3.Distance(a: _transform.position, b: wp.position) < 0.01f) {
+            if (Vector3.Distance(_transform.position, wp.position) < 0.01f) {
                 _transform.position = wp.position;
                 _waitCounter = 0f;
                 _waiting = true;
 
                 _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
-
+                _aStarAgent.SetTarget(wp); // Set the AStarAgent's target to the current waypoint
             } else {
-                _transform.position = Vector3.MoveTowards(current: _transform.position, target: wp.position, maxDistanceDelta: RussyBT.speed * Time.deltaTime);
-                _transform.LookAt(worldPosition: wp.position);
-            } 
+                _aStarAgent.SetTarget(wp); // Set the AStarAgent's target to the current waypoint
+            }
         }
 
         state = NodeState.RUNNING;
