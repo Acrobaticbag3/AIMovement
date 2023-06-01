@@ -29,30 +29,36 @@ public class TaskPatrol : Node {
         _transform = transform;
         _waypoints = waypoints;
         _aStarAgent = aStarAgent;
+        _aStarAgent.OnPathCompleted += OnPathCompleted;
     }
 
     public override NodeState Evaluate() {
         if (_waiting) {
             _waitCounter += Time.deltaTime;
-            if (_waitCounter < _waitTime) {
+
+            if (_waitCounter >= _waitTime) {
                 _waiting = false;
+                SetNextWaypoint();
             }
-        } else {
-            Transform wp = _waypoints[_currentWaypointIndex];
 
-            if (Vector3.Distance(_transform.position, wp.position) < 0.01f) {
-                _transform.position = wp.position;
-                _waitCounter = 0f;
-                _waiting = true;
-
-                _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
-                _aStarAgent.SetTarget(wp); // Set the AStarAgent's target to the current waypoint
-            } else {
-                _aStarAgent.SetTarget(wp); // Set the AStarAgent's target to the current waypoint
-            }
+        } else if (!_aStarAgent.IsFollowingPath) {
+            SetNextWaypoint();
         }
 
         state = NodeState.RUNNING;
         return state;
+    }
+
+    private void SetNextWaypoint() {
+        _currentWaypointIndex = (_currentWaypointIndex + 1) % _waypoints.Length;
+        Transform wp = _waypoints[_currentWaypointIndex];
+        _aStarAgent.SetTarget(wp);
+        _waiting = true;
+        _waitCounter = 0f;
+    }
+
+    private void OnPathCompleted() {
+        // Path completed, continue to the next waypoint
+        SetNextWaypoint();
     }
 }
