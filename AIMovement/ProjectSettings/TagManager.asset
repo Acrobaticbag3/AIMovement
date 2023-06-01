@@ -8,7 +8,6 @@ TagManager:
   - EnemyAI
   - Wall
   - Projectile
-  - Waypoint
   layers:
   - Default
   - TransparentFX

@@ -15,11 +15,11 @@ public class AStarPathfinding : MonoBehaviour {
         grid = GetComponent<AStarGrid>();
     }
 
-    public void StartFindPath(Vector3 startPos, Vector3 targetPos, Action<Vector3[]> callback) {
-        StartCoroutine(FindPath(startPos, targetPos, callback));
+    public void StartFindPath(Vector3 startPos, Vector3 targetPos) {
+        StartCoroutine(FindPath(startPos, targetPos));
     }
    
-    IEnumerator FindPath(Vector3 startPos, Vector3 targetPos, Action<Vector3[]> callback) {
+    IEnumerator FindPath(Vector3 startPos, Vector3 targetPos) {
 
         Stopwatch sw = new Stopwatch();
         sw.Start();
@@ -64,12 +64,6 @@ public class AStarPathfinding : MonoBehaviour {
                     }
                 }
             }
-            if (didPathSucceed) {
-                waypoints = RetraceMainPath(startNode: startNode, endNode: targetNode);
-            }
-            callback.Invoke(waypoints);
-            requestManager.FinishedProcessingPath(waypoints, didPathSucceed); // Notify the request manager
-            yield return null;
         }
         yield return null;
 
