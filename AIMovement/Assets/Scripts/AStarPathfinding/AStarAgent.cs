@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AStarAgent : MonoBehaviour {
+public class AStarAgent : MonoBehaviour
+{
     public Transform target;
     private int targetIndex;
     private Vector3 targetOldPosition;
@@ -18,20 +19,26 @@ public class AStarAgent : MonoBehaviour {
     private bool isFollowingPath = false;       // Flag to track if the agent is currently following a path
     public bool IsFollowingPath => isFollowingPath;
 
+    private bool isFollowingPlayer = false; // Flag to track if the agent is following the player
+
     public delegate void PathCompletedHandler();
     public event PathCompletedHandler OnPathCompleted; // Event to signal path completion
 
-    private void Awake() {
+    private void Awake()
+    {
         targetOldPosition = transform.position; // Set initial targetOldPosition to agent's position
     }
 
-    private void Update() {
-        if (target != null && Vector3.Distance(targetOldPosition, target.position) > 3f && !isUpdatingPath && !isFollowingPath) {
+    private void Update()
+    {
+        if (target != null && !isFollowingPlayer && Vector3.Distance(targetOldPosition, target.position) > 3f && !isUpdatingPath && !isFollowingPath)
+        {
             StartCoroutine(UpdatePathWithDelay());
         }
     }
 
-    private IEnumerator UpdatePathWithDelay() {
+    private IEnumerator UpdatePathWithDelay()
+    {
         isUpdatingPath = true;
 
         // Calculate a random endpoint within the search radius
@@ -40,7 +47,7 @@ public class AStarAgent : MonoBehaviour {
 
         if (target.CompareTag("Player")) // Check if the target is the player
         {
-            pathUpdateDelay = 0.1f; // Set path update delay to 1 if the target is the player
+            pathUpdateDelay = 0.1f; // Set path update delay to 0.1 if the target is the player
         }
 
         PathRequestManager.RequestPath(transform.position, randomTargetPosition, OnPathFound);
@@ -51,21 +58,26 @@ public class AStarAgent : MonoBehaviour {
         isUpdatingPath = false;
     }
 
-    public void OnPathFound(Vector3[] newPath, bool pathIsSuccessful) {
-        if (pathIsSuccessful) {
+    public void OnPathFound(Vector3[] newPath, bool pathIsSuccessful)
+    {
+        if (pathIsSuccessful)
+        {
             path = newPath;
             targetIndex = 0;
             StartCoroutine(FollowPath());
         }
     }
 
-    private IEnumerator FollowPath() {
+    private IEnumerator FollowPath()
+    {
         isFollowingPath = true;
 
-        while (targetIndex < path.Length) {
+        while (targetIndex < path.Length)
+        {
             Vector3 currentWaypoint = path[targetIndex];
 
-            while (transform.position != currentWaypoint) {
+            while (transform.position != currentWaypoint)
+            {
                 Vector3 targetDir = currentWaypoint - transform.position;
                 float step = rotationSpeed * Time.deltaTime;
                 Vector3 newDir = Vector3.RotateTowards(transform.forward, targetDir, step, 0.0F);
@@ -85,21 +97,31 @@ public class AStarAgent : MonoBehaviour {
         OnPathCompleted?.Invoke();
     }
 
-    public void SetTarget(Transform newTarget) {
-        target = newTarget;
-        targetOldPosition = transform.position; // Update the targetOldPosition when setting a new target
+    public void SetTarget(Transform newTarget)
+    {
+        if (!isFollowingPlayer) 
+        {
+            target = newTarget;
+            targetOldPosition = transform.position; // Update the targetOldPosition when setting a new target
+        }
     }
 
-    public void OnDrawGizmos() {
-        if (path != null) {
-            for (int i = targetIndex; i < path.Length; i++) {
+    public void OnDrawGizmos()
+    {
+        if (path != null)
+        {
+            for (int i = targetIndex; i < path.Length; i++)
+            {
                 Gizmos.color = Color.black;
                 Gizmos.DrawCube(path[i], Vector3.one);
 
-                if (i == targetIndex) {
+                if (i == targetIndex)
+                {
                     Gizmos.DrawLine(transform.position, path[i]);
 
-                } else {
+                }
+                else
+                {
                     Gizmos.DrawLine(path[i - 1], path[i]);
                 }
             }
